@@ -88,7 +88,13 @@ public class TestAgencia {
 	 * demo guardarMarcasModelos()
 	 */
 	public void testGuardarMarcasModelos() {
-
+		System.out.println("Guardando en fichero marcas y modelos...");
+		try {
+			agencia.guardarMarcasModelos();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		System.out.println("\nGuardado");
 	}
 
 	/**
@@ -118,6 +124,7 @@ public class TestAgencia {
 			test.testFurgonetasOrdenadasPorVolumen();
 
 			test.testMarcasConModelos();
+			test.testGuardarMarcasModelos();
 
 		}
 

@@ -1,6 +1,12 @@
 package alquileres.modelo;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,8 +27,8 @@ import java.util.TreeSet;
 public class AgenciaAlquiler {
 	private String nombre; // el nombre de la agencia
 	private List<Vehiculo> flota; // la lista de vehículos
-	static final File FICHERO_ENTRADA = flota.csv;
-	static final File FICHERO_SALIDA = marcasmodelos.txt;
+	static final String FICHERO_ENTRADA = "flota.csv";
+	static final String FICHERO_SALIDA = "marcasmodelos.txt";
 
 	/**
 	 * Constructor
@@ -56,7 +62,7 @@ public class AgenciaAlquiler {
 	 * Asumimos todos los datos correctos. Puede haber espacios antes y después
 	 * de cada dato
 	 */
-	private Vehiculo obtenerVehiculo(String linea) {
+	private Vehiculo obtenerVehiculo(String linea) throws NumberFormatException{
         String[] separado = linea.split(",");
 		String[] variables = new String[separado.length];
 		for (int i = 0; i < separado.length; i++) {
@@ -76,19 +82,31 @@ public class AgenciaAlquiler {
 	 * de la flota de vehículos  
 	 */
 	public int cargarFlota() {
-		String[] datos = Utilidades.obtenerLineasDatos();
-		String error = null;
+		int errores = 0;
+		String linea = "";
+		BufferedReader br = null;
 		try {
-			for (String linea : datos) {
-				error = linea;
-				Vehiculo vehiculo = obtenerVehiculo(linea);
-				this.addVehiculo(vehiculo);
-
+			br = new BufferedReader(new FileReader(new File(FICHERO_ENTRADA)));
+			while ((linea = br.readLine()) != null) {
+				try {
+					Vehiculo vehiculo = obtenerVehiculo(linea);
+					this.addVehiculo(vehiculo);
+				} catch (Exception e) {
+					errores++;
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(linea);
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+				System.out.println("Error al cerrar el fichero");
+			} catch (NullPointerException e) {
+				System.out.println("La variable del archivo contiene el valor null");
 			}
 		}
-		catch (Exception e) {
-			System.out.println(error);
-		}
+		return errores;
 
 	}
 
@@ -180,6 +198,15 @@ public class AgenciaAlquiler {
 			}
 		}
 		return marcas;
+	}
+	public void guardarMarcasModelos() throws IOException, NullPointerException {
+		PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(new File(FICHERO_SALIDA))));
+		Map<String, Set<String>> marcas = this.marcasConModelos();
+		for (Map.Entry<String, Set<String>> marca : marcas.entrySet()) {
+			pw.println("Marca: " + marca.getKey());
+			pw.printf("%8sModelos: %s \n\n", " ", marca.getValue());
+		}
+		pw.close();
 	}
 
 }
